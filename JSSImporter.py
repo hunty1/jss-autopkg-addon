@@ -296,6 +296,7 @@ class JSSImporter(Processor):
         else:
               pkg_id = str(proceed_list[1])
               self.output("Pkg already exists according to JSS, moving on")
+              sys.exit(0)  ## When in doubt HULK SMASH! We know the PKG is there and is named uniquely based on version number so why bother going any further, just bail out now
         source_item = self.env["pkg_path"]
         dest_item = (self.env["JSS_REPO"] + "/" + pkg_name)
         if os.path.exists(dest_item):
