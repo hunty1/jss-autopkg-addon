@@ -252,6 +252,11 @@ class JSSImporter(Processor):
         pkg_name = os.path.basename(self.env["pkg_path"])
         prod_name = self.env["prod_name"]
         version = self.env["version"]
+        patchoo_sgroup = ("update"+prod_name+"-"+version)
+        patchoo_policy = ("update"+prod_name+"-"+version)
+        patchoo_category = ("0patchoo-dev")
+        patchoo_trigger = ("update-dev")
+        
         # pre-set 'changed/added/updated' output checks to False
         self.env["jss_repo_changed"] = False
         self.env["jss_category_added"] = False
@@ -283,8 +288,8 @@ class JSSImporter(Processor):
         # check for package by pkg_name for both API POST
         #   and if exists at repo_path
         #
-            template_string = """<?xml version="1.0" encoding="UTF-8"?><package><name>%PKG_NAME%</name><category>0patchoo-dev</category><filename>%PKG_NAME%</filename><info/><notes/><priority>10</priority><reboot_required>false</reboot_required><fill_user_template>false</fill_user_template><fill_existing_users>false</fill_existing_users><boot_volume_required>false</boot_volume_required><allow_uninstalled>false</allow_uninstalled><os_requirements/><required_processor>None</required_processor><switch_with_package>Do Not Install</switch_with_package><install_if_reported_available>false</install_if_reported_available><reinstall_option>Do Not Reinstall</reinstall_option><triggering_files/><send_notification>false</send_notification></package>"""
-            replace_dict = {"%PKG_NAME%" : pkg_name, "%PROD_NAME%" : prod_name, "%CAT_NAME%" : category_name}
+            template_string = """<?xml version="1.0" encoding="UTF-8"?><package><name>%PKG_NAME%</name><category>%PAT_CAT%</category><filename>%PKG_NAME%</filename><info/><notes/><priority>10</priority><reboot_required>false</reboot_required><fill_user_template>false</fill_user_template><fill_existing_users>false</fill_existing_users><boot_volume_required>false</boot_volume_required><allow_uninstalled>false</allow_uninstalled><os_requirements/><required_processor>None</required_processor><switch_with_package>Do Not Install</switch_with_package><install_if_reported_available>false</install_if_reported_available><reinstall_option>Do Not Reinstall</reinstall_option><triggering_files/><send_notification>false</send_notification></package>"""
+            replace_dict = {"%PKG_NAME%" : pkg_name, "%PROD_NAME%" : prod_name, "%CAT_NAME%" : category_name, "%PAT_CAT%" : patchoo_category}
         else:
             template_string = """<?xml version="1.0" encoding="UTF-8"?><package><name>%PKG_NAME%</name><filename>%PKG_NAME%</filename><info/><notes/><priority>10</priority><reboot_required>false</reboot_required><fill_user_template>false</fill_user_template><fill_existing_users>false</fill_existing_users><boot_volume_required>false</boot_volume_required><allow_uninstalled>false</allow_uninstalled><os_requirements/><required_processor>None</required_processor><switch_with_package>Do Not Install</switch_with_package><install_if_reported_available>false</install_if_reported_available><reinstall_option>Do Not Reinstall</reinstall_option><triggering_files/><send_notification>false</send_notification></package>"""
             replace_dict = {"%PKG_NAME%" : pkg_name, "%PROD_NAME%" : prod_name}
@@ -296,7 +301,6 @@ class JSSImporter(Processor):
         else:
               pkg_id = str(proceed_list[1])
               self.output("Pkg already exists according to JSS, moving on")
-              sys.exit(0)  ## When in doubt HULK SMASH! We know the PKG is there and is named uniquely based on version number so why bother going any further, just bail out now
         source_item = self.env["pkg_path"]
         dest_item = (self.env["JSS_REPO"] + "/" + pkg_name)
         if os.path.exists(dest_item):
@@ -313,14 +317,14 @@ class JSSImporter(Processor):
         #
         # check for smartGroup if var set
         #
-        if self.env.get("smart_group"):
-            smart_group_name = self.env.get("smart_group")
+        if patchoo_sgroup :
+            smart_group_name = patchoo_sgroup
             if not smart_group_name == "*LEAVE_OUT*":
                 item_to_check = smart_group_name
                 apiUrl = "computergroup"
                 proceed_list = self.checkItem(repoUrl, apiUrl, item_to_check, base64string)
-                template_string = """<?xml version="1.0" encoding="UTF-8"?><computer_group><name>update%PROD_NAME%-%version%</name><is_smart>true</is_smart><criteria><size>4</size><criterion><name>Cached Packages</name><priority>0</priority><and_or>and</and_or><search_type>does not have</search_type><value>%PROD_NAME%-%version%.pkg</value></criterion><criterion><name>Packages Installed By Casper</name><priority>1</priority><and_or>and</and_or><search_type>does not have</search_type><value>%PROD_NAME%-%version%.pkg</value></criterion><criterion><name>Application Title</name><priority>2</priority><and_or>and</and_or><search_type>has</search_type><value>%PROD_NAME%.app</value></criterion><criterion><name>Application Version</name><priority>3</priority><and_or>and</and_or><search_type>is not</search_type><value>%version%</value></criterion></criteria><computers><size>0</size></computers></computer_group>"""
-                replace_dict = {"%PROD_NAME%" : prod_name, "%version%" : version}
+                template_string = """<?xml version="1.0" encoding="UTF-8"?><computer_group><name>%PAT_GRP%</name><is_smart>true</is_smart><criteria><size>4</size><criterion><name>Cached Packages</name><priority>0</priority><and_or>and</and_or><search_type>does not have</search_type><value>%PROD_NAME%-%version%.pkg</value></criterion><criterion><name>Packages Installed By Casper</name><priority>1</priority><and_or>and</and_or><search_type>does not have</search_type><value>%PROD_NAME%-%version%.pkg</value></criterion><criterion><name>Application Title</name><priority>2</priority><and_or>and</and_or><search_type>has</search_type><value>%PROD_NAME%.app</value></criterion><criterion><name>Application Version</name><priority>3</priority><and_or>and</and_or><search_type>is not</search_type><value>%version%</value></criterion></criteria><computers><size>0</size></computers></computer_group>"""
+                replace_dict = {"%PROD_NAME%" : prod_name, "%version%" : version, "%PAT_GRP%" : patchoo_sgroup}
                 if "proceed" not in proceed_list:
                     grp_id = self.createObject(repoUrl, apiUrl, replace_dict, template_string, base64string)
                     self.env["jss_smartgroup_added"] = True
@@ -350,14 +354,14 @@ class JSSImporter(Processor):
         #
         # check for policy if var set
         #
-        if self.env.get("selfserve_policy"):
-            item_to_check = self.env.get("selfserve_policy")
+        if patchoo_policy :
+            item_to_check = patchoo_policy
             if not item_to_check == "*LEAVE_OUT*":
                 apiUrl = "policy"
                 proceed_list = self.checkItem(repoUrl, apiUrl, item_to_check, base64string)
-                template_string = """<?xml version="1.0" encoding="UTF-8"?><policy><general><name>update%PROD_NAME%-%version%</name><enabled>true</enabled><trigger>EVENT</trigger><trigger_other>update-dev</trigger_other><frequency>Ongoing</frequency><category><name>0patchoo-dev</name></category></general><scope><computer_groups><computer_group><id>%grp_id%</id></computer_group></computer_groups></scope><package_configuration><packages><size>1</size><package><id>%pkg_id%</id><action>Cache</action></package></packages></package_configuration><scripts><size>1</size><script><name>0patchoo.sh</name><priority>After</priority><parameter4>--cache</parameter4></script></scripts></policy>"""
+                template_string = """<?xml version="1.0" encoding="UTF-8"?><policy><general><name>%PAT_POLICY%</name><enabled>true</enabled><trigger>EVENT</trigger><trigger_other>%PAT_TRIG%</trigger_other><frequency>Ongoing</frequency><category><name>0patchoo-dev</name></category></general><scope><computer_groups><computer_group><id>%grp_id%</id></computer_group></computer_groups></scope><package_configuration><packages><size>1</size><package><id>%pkg_id%</id><action>Cache</action></package></packages></package_configuration><scripts><size>1</size><script><name>0patchoo.sh</name><priority>After</priority><parameter4>--cache</parameter4></script></scripts></policy>"""
                 self.output("Current grp_id is %s, pkg_id is %s" % (grp_id, pkg_id))
-                replace_dict = {"%PROD_NAME%" : prod_name, "%grp_id%" : grp_id, "%pkg_id%" : pkg_id, "%version%" : version}
+                replace_dict = {"%PROD_NAME%" : prod_name, "%grp_id%" : grp_id, "%pkg_id%" : pkg_id, "%version%" : version, "%PAT_POLICY%" : patchoo_policy, "%PAT_TRIG%" : patchoo_trigger}
                 if "proceed" not in proceed_list:
                     self.createObject(repoUrl, apiUrl, replace_dict, template_string, base64string)
                     self.env["jss_policy_added"] = True
