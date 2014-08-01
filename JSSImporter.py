@@ -1,5 +1,16 @@
 #!/usr/bin/env python
 #
+# Calum Hunter
+# 01-08-2014
+# v.0.0.3
+#
+# Pretty much all of this code has been written
+# by the awesome Allister Banks  
+# I have added a few little tweaks to have it play nice
+# with the Patchoo! project by Lachlan Stewart.
+# http://patchoo.github.io/patchoo/
+#
+#
 # Copyright 2014 Allister Banks
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
