@@ -12,8 +12,8 @@ Once those two items are done, just git clone this JSSImporter.py into
 /Library/AutoPkg/autopkglib/
 
 You can use any existing .jss recipes with this. However the following keys in the recipe will be ignored, so dont bother changing them in an override
-<SMART_GROUP>
-<SELFSERVE_POLICY>
+" < SMART_GROUP > ""
+"< SELFSERVE_POLICY > ""
 
 This version of the JSS Importer will create a smart group and a policy that Patchoo expects. For example: updateFirefox-31.0
 
