@@ -266,8 +266,8 @@ class JSSImporter(Processor):
         patchoo_category = ("0patchoo-dev")
         patchoo_trigger = ("update-dev")
         timestamp = datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
-        pkg_notes = (prod_name+" version "+version+" Imported by AutoPKG on "+timestamp)
-        pkg_info = (prod_name+" version "+version)
+        pkg_notes = (prod_name+" "+version+" Imported by AutoPKG on "+timestamp)
+        pkg_info = (prod_name+" "+version)
         
         # pre-set 'changed/added/updated' output checks to False
         self.env["jss_repo_changed"] = False
