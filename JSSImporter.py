@@ -1,16 +1,13 @@
 #!/usr/bin/env python
-#
 # Calum Hunter
-# 01-08-2014
-# v.0.0.3
+# 04-08-2014
+# v.0.0.4
 #
 # Pretty much all of this code has been written
 # by the awesome Allister Banks  
 # I have added a few little tweaks to have it play nice
 # with the Patchoo! project by Lachlan Stewart.
 # http://patchoo.github.io/patchoo/
-#
-#
 # Copyright 2014 Allister Banks
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,6 +29,7 @@ import sys
 import re
 import base64
 import shutil
+import datetime
 from xml.etree import ElementTree
 
 from autopkglib import Processor, ProcessorError
@@ -267,6 +265,9 @@ class JSSImporter(Processor):
         patchoo_policy = ("update"+prod_name+"-"+version)
         patchoo_category = ("0patchoo-dev")
         patchoo_trigger = ("update-dev")
+        timestamp = datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
+        pkg_notes = (prod_name+" version "+version+" Imported by AutoPKG on "+timestamp)
+        pkg_info = (prod_name+" version "+version)
         
         # pre-set 'changed/added/updated' output checks to False
         self.env["jss_repo_changed"] = False
@@ -299,8 +300,8 @@ class JSSImporter(Processor):
         # check for package by pkg_name for both API POST
         #   and if exists at repo_path
         #
-            template_string = """<?xml version="1.0" encoding="UTF-8"?><package><name>%PKG_NAME%</name><category>%PAT_CAT%</category><filename>%PKG_NAME%</filename><info/><notes/><priority>10</priority><reboot_required>false</reboot_required><fill_user_template>false</fill_user_template><fill_existing_users>false</fill_existing_users><boot_volume_required>false</boot_volume_required><allow_uninstalled>false</allow_uninstalled><os_requirements/><required_processor>None</required_processor><switch_with_package>Do Not Install</switch_with_package><install_if_reported_available>false</install_if_reported_available><reinstall_option>Do Not Reinstall</reinstall_option><triggering_files/><send_notification>false</send_notification></package>"""
-            replace_dict = {"%PKG_NAME%" : pkg_name, "%PROD_NAME%" : prod_name, "%CAT_NAME%" : category_name, "%PAT_CAT%" : patchoo_category}
+            template_string = """<?xml version="1.0" encoding="UTF-8"?><package><name>%PKG_NAME%</name><category>%PAT_CAT%</category><filename>%PKG_NAME%</filename><info>%PKG_INFO%</info><notes>%PKG_NOTE%</notes><priority>10</priority><reboot_required>false</reboot_required><fill_user_template>false</fill_user_template><fill_existing_users>false</fill_existing_users><boot_volume_required>false</boot_volume_required><allow_uninstalled>false</allow_uninstalled><os_requirements/><required_processor>None</required_processor><switch_with_package>Do Not Install</switch_with_package><install_if_reported_available>false</install_if_reported_available><reinstall_option>Do Not Reinstall</reinstall_option><triggering_files/><send_notification>false</send_notification></package>"""
+            replace_dict = {"%PKG_NAME%" : pkg_name, "%PROD_NAME%" : prod_name, "%CAT_NAME%" : category_name, "%PAT_CAT%" : patchoo_category, "%PKG_INFO%" : pkg_info, "%PKG_NOTE%" : pkg_notes}
         else:
             template_string = """<?xml version="1.0" encoding="UTF-8"?><package><name>%PKG_NAME%</name><filename>%PKG_NAME%</filename><info/><notes/><priority>10</priority><reboot_required>false</reboot_required><fill_user_template>false</fill_user_template><fill_existing_users>false</fill_existing_users><boot_volume_required>false</boot_volume_required><allow_uninstalled>false</allow_uninstalled><os_requirements/><required_processor>None</required_processor><switch_with_package>Do Not Install</switch_with_package><install_if_reported_available>false</install_if_reported_available><reinstall_option>Do Not Reinstall</reinstall_option><triggering_files/><send_notification>false</send_notification></package>"""
             replace_dict = {"%PKG_NAME%" : pkg_name, "%PROD_NAME%" : prod_name}
